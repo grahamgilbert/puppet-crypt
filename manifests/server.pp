@@ -1,6 +1,7 @@
 # == Class: crypt::server
 #
-# Installs and configures a Crypt server on Ubuntu 12.04
+# Installs and configures a Crypt server on Ubuntu 12.04 to /usr/local/crypt, running using mod_wsgi on Apache.
+# Sets the initial administrative password to 'password'
 #
 # === Parameters
 #
@@ -81,26 +82,35 @@ class crypt::server (
     
     file {'/usr/local/crypt/fvserver/settings.py':
         ensure => present,
-        owner => 0,
-        group => 0,
+        owner => www-data,
+        group => www-data,
         content => template('crypt/settings.py.erb'),
         require => Vcsrepo['/usr/local/crypt'],
     }
     
     file {'/usr/local/crypt/initial_data.json':
         ensure => present,
-        owner => 0,
-        group => 0,
+        owner => www-data,
+        group => www-data,
         source => 'puppet:///modules/crypt/initial_data.json',
         require => Vcsrepo['/usr/local/crypt'],
     }
     
     file {'/usr/local/crypt/crypt.wsgi':
         ensure => present,
-        owner => 0,
-        group => 0,
+        owner => www-data,
+        group => www-data,
         source => 'puppet:///modules/crypt/crypt.wsgi',
         require => Vcsrepo['/usr/local/crypt'],
+    }
+    
+    file {'/usr/local/crypt/set_password.py':
+        ensure => present,
+        owner => www-data,
+        group => www-data,
+        content => template('crypt/set_password.py.erb'),
+        require => Vcsrepo['/usr/local/crypt'],
+        before  => Exec['/usr/local/crypt_env/bin/python /usr/local/crypt/set_password.py'],
     }
     
     exec {'/usr/local/crypt_env/bin/python /usr/local/crypt/manage.py syncdb --noinput':
@@ -111,17 +121,43 @@ class crypt::server (
     }
     
     exec {'/usr/local/crypt_env/bin/python /usr/local/crypt/manage.py migrate':
+        #require => Exec['/usr/local/crypt_env/bin/python /usr/local/crypt/manage.py syncdb --noinput'],
+        path    => '/usr/local/crypt_env/bin',
+        notify  => Exec['/usr/local/crypt_env/bin/python /usr/local/crypt/manage.py collectstatic --noinput'],
+        refreshonly => true,
+    }
+    
+    exec {'/usr/local/crypt_env/bin/python /usr/local/crypt/manage.py collectstatic --noinput':
+        require => Python::Virtualenv['/usr/local/crypt_env'],
+        path    => '/usr/local/crypt_env/bin',
+        notify  => Exec["/usr/local/crypt_env/bin/python /usr/local/crypt/manage.py createsuperuser --noinput --email=${admin_email} --username=${admin_name}"],
+        refreshonly => true,
+    }
+    
+    exec {"/usr/local/crypt_env/bin/python /usr/local/crypt/manage.py createsuperuser --noinput --email=${admin_email} --username=${admin_name}":
+        #require => Exec['/usr/local/crypt_env/bin/python /usr/local/crypt/manage.py syncdb --noinput'],
+        path    => '/usr/local/crypt_env/bin',
+        notify  => Exec['/usr/local/crypt_env/bin/python /usr/local/crypt/set_password.py'],
+        refreshonly => true,
+    }
+    
+    exec {'/usr/local/crypt_env/bin/python /usr/local/crypt/set_password.py':
         require => Exec['/usr/local/crypt_env/bin/python /usr/local/crypt/manage.py syncdb --noinput'],
         path    => '/usr/local/crypt_env/bin',
-        notify  => Service['httpd'],
+        notify  => [Service['httpd']],
         refreshonly => true,
+    }
+    
+    file {'/usr/local/crypt/crypt.db': 
+        owner  => www-data,
+        group  => www-data,
+        require => Exec['/usr/local/crypt_env/bin/python /usr/local/crypt/set_password.py'],
     }
     
     apache::vhost { "${hostname}":
         port            => '80',
         docroot         => '/usr/local/crypt',
-        template => template("crypt/vhost.erb"),
-        default_vhost   => true,
+        template => 'crypt/vhost.erb',
      }
      
      file {'/usr/local/crypt':

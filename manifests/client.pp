@@ -14,7 +14,7 @@
 #   If you want to skip encryption for certain usernames (your local admin user, for example), put them in here
 #
 # [*install_app*]
-#   Whether the a loginhook should be created to run Crypt on unencrypted Macs
+#   Whether the a loginhook should be created to run Crypt on unencrypted Macs - Currently in progress
 #
 # === Example
 #
