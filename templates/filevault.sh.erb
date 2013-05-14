@@ -35,21 +35,13 @@ check_encryption_state() {
   fi
 }
 
-
-# Replace YOUR_LOCAL_ADMIN_ACCOUNT here if you want to allow such accounts to bypass this check.
 main() {
   check_encryption_state
 
-  <% if skip_usernames %>
-  if [[ <% skip_usernames.each_with_index do |username, index| -%><% if index == 0 -%>$1 == "<%= username -%>"<% else -%>|| $1 == "<%= username -%>"<% end -%> ]]; then<% end -%>
+  <% if skip_usernames %>if [[ <% skip_usernames.each_with_index do |username, index| -%><% if index == 0 -%>$1 == "<%= username -%>"<% else -%> || $1 == "<%= username -%>"<% end -%><% end -%> ]]; then<% end -%>
     log "Exiting Crypt hook for $1 logging in."
     exit 0
   fi
-
-  # Uncomment the following three lines for use with iHook
-  #echo "%WINDOWLEVEL NORMAL"
-  #echo "%BEGINPOLE"
-  #echo "%RESIGNKEY"
 
   if [ -f ${BINARY} ]; then
     cd /tmp

@@ -1,0 +1,12 @@
+<VirtualHost *:80>
+ServerName crypt.yourdomain.com
+WSGIScriptAlias / /usr/local/crypt/crypt.wsgi
+WSGIDaemonProcess crypt user=www-data group=www-data
+Alias /static/ /usr/local/crypt/static/
+<Directory /usr/local/crypt>
+       WSGIProcessGroup crypt
+        WSGIApplicationGroup %{GLOBAL}
+        Order deny,allow
+        Allow from all
+</Directory>
+</VirtualHost>

@@ -29,12 +29,10 @@
 class crypt::client (
     $server_url     = $crypt::params::server_url,
     $loginhook      = $crypt::params::loginhook,
-    $skip_usernames = undef,
+    $skip_usernames = ['root','ladmin'],
     $install_app    = undef,
     
     ) inherits crypt::params {
-    
-    include mac_admin::loginhook
     
     if ! defined(File['/var/lib/puppet/crypt']) {
       file { '/var/lib/puppet/crypt':
