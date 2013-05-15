@@ -8,14 +8,11 @@
 # [*hostname*]
 #   The hostname of the Crypt Server - defaults to $::hostname
 #
-# [*loginhook*]
-#   Whether the a loginhook should be created to run Crypt on unencrypted Macs
+# [*admin_name*]
+#   The initial administrative username
 #
-# [*skip_usernames*]
-#   If you want to skip encryption for certain usernames (your local admin user, for example), put them in here
-#
-# [*install_app*]
-#   Whether the a loginhook should be created to run Crypt on unencrypted Macs
+# [*admin_email*]
+#   The initial administrative email address
 #
 # === Example
 #
