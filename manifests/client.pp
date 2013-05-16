@@ -10,18 +10,18 @@
 # [*loginhook*]
 #   Whether the a loginhook should be created to run Crypt on unencrypted Macs
 #
-# [*skip_usernames*]
-#   If you want to skip encryption for certain usernames (your local admin user, for example), put them in here
+# [*skip_username*]
+#   If you want to skip encryption for a user put it in here
 #
 # [*install_app*]
-#   Whether the a loginhook should be created to run Crypt on unencrypted Macs - Currently in progress
+#   Whether the a loginhook should be created to run Crypt on unencrypted Macs
 #
 # === Example
 #
 #  class { 'crypt::client':
 #    server_url => 'http://crypt.example.com',
 #    loginhook => true,
-#    skip_usernames => ['ladmin','root'],
+#    skip_usernames => 'ladmin',
 #    install_app => true,
 #  }
 #
@@ -29,10 +29,12 @@
 class crypt::client (
     $server_url     = $crypt::params::server_url,
     $loginhook      = $crypt::params::loginhook,
-    $skip_usernames = ['root','ladmin'],
+    $skip_username = undef,
     $install_app    = undef,
     
     ) inherits crypt::params {
+    
+    #include mac_admin::loginhook
     
     if ! defined(File['/var/lib/puppet/crypt']) {
       file { '/var/lib/puppet/crypt':
@@ -68,5 +70,4 @@ class crypt::client (
         }
     }
     
-    # Todo: Install the app.
 }
