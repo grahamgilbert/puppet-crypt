@@ -20,7 +20,7 @@ class { 'crypt::server':
 class { 'crypt::client':
     server_url => 'http://crypt.example.com',
     loginhook => true,
-    skip_usernames => ['ladmin','root'],
+    skip_username => 'ladmin',
     install_app => true,
 }
 ```
