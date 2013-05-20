@@ -9,5 +9,4 @@ project_page ''
 
 ## Add dependencies, if any:
 dependency 'rcoleman/mac_profiles_handler', '>= 0.1.0'
-# Uncomment this when it's released
-# dependency 'grahamgilbert/mac_admin', '>=0.1.0'
+dependency 'grahamgilbert/mac_admin', '>=0.1.0'
