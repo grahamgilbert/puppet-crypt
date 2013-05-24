@@ -27,7 +27,6 @@ class crypt::server (
     $hostname = $crypt::params::hostname,
     $admin_name,
     $admin_email
-    
     ) inherits crypt::params {
     
     include apache
@@ -38,27 +37,27 @@ class crypt::server (
     }
     
     package {'python-setuptools':
-        ensure => present,
+        ensure  => present,
         require => Package['build-essential'],
     }
     
     package {'python-dev':
-        ensure => present,
+        ensure  => present,
         require => Package['python-setuptools'],
     }
     
     package {'build-essential':
-        ensure => present,
+        ensure  => present,
         require => Package['git'],
     }
     
     package {'python-pip':
-        ensure => present,
+        ensure  => present,
         require => Package['python-dev'],
     }
     
     package {'python-virtualenv':
-        ensure => present,
+        ensure  => present,
         require => Package['python-pip'],
     }
     
@@ -78,33 +77,33 @@ class crypt::server (
     }
     
     file {'/usr/local/crypt/fvserver/settings.py':
-        ensure => present,
-        owner => www-data,
-        group => www-data,
+        ensure  => present,
+        owner   => www-data,
+        group   => www-data,
         content => template('crypt/settings.py.erb'),
         require => Vcsrepo['/usr/local/crypt'],
     }
     
     file {'/usr/local/crypt/initial_data.json':
-        ensure => present,
-        owner => www-data,
-        group => www-data,
-        source => 'puppet:///modules/crypt/initial_data.json',
+        ensure  => present,
+        owner   => www-data,
+        group   => www-data,
+        source  => 'puppet:///modules/crypt/initial_data.json',
         require => Vcsrepo['/usr/local/crypt'],
     }
     
     file {'/usr/local/crypt/crypt.wsgi':
-        ensure => present,
-        owner => www-data,
-        group => www-data,
-        source => 'puppet:///modules/crypt/crypt.wsgi',
+        ensure  => present,
+        owner   => www-data,
+        group   => www-data,
+        source  => 'puppet:///modules/crypt/crypt.wsgi',
         require => Vcsrepo['/usr/local/crypt'],
     }
     
     file {'/usr/local/crypt/set_password.py':
-        ensure => present,
-        owner => www-data,
-        group => www-data,
+        ensure  => present,
+        owner   => www-data,
+        group   => www-data,
         content => template('crypt/set_password.py.erb'),
         require => Vcsrepo['/usr/local/crypt'],
         before  => Exec['/usr/local/crypt_env/bin/python /usr/local/crypt/set_password.py'],
@@ -118,30 +117,28 @@ class crypt::server (
     }
     
     exec {'/usr/local/crypt_env/bin/python /usr/local/crypt/manage.py migrate':
-        #require => Exec['/usr/local/crypt_env/bin/python /usr/local/crypt/manage.py syncdb --noinput'],
-        path    => '/usr/local/crypt_env/bin',
-        notify  => Exec['/usr/local/crypt_env/bin/python /usr/local/crypt/manage.py collectstatic --noinput'],
+        path        => '/usr/local/crypt_env/bin',
+        notify      => Exec['/usr/local/crypt_env/bin/python /usr/local/crypt/manage.py collectstatic --noinput'],
         refreshonly => true,
     }
     
     exec {'/usr/local/crypt_env/bin/python /usr/local/crypt/manage.py collectstatic --noinput':
-        require => Python::Virtualenv['/usr/local/crypt_env'],
-        path    => '/usr/local/crypt_env/bin',
-        notify  => Exec["/usr/local/crypt_env/bin/python /usr/local/crypt/manage.py createsuperuser --noinput --email=${admin_email} --username=${admin_name}"],
+        require     => Python::Virtualenv['/usr/local/crypt_env'],
+        path        => '/usr/local/crypt_env/bin',
+        notify      => Exec["/usr/local/crypt_env/bin/python /usr/local/crypt/manage.py createsuperuser --noinput --email=${admin_email} --username=${admin_name}"],
         refreshonly => true,
     }
     
     exec {"/usr/local/crypt_env/bin/python /usr/local/crypt/manage.py createsuperuser --noinput --email=${admin_email} --username=${admin_name}":
-        #require => Exec['/usr/local/crypt_env/bin/python /usr/local/crypt/manage.py syncdb --noinput'],
-        path    => '/usr/local/crypt_env/bin',
-        notify  => Exec['/usr/local/crypt_env/bin/python /usr/local/crypt/set_password.py'],
+        path        => '/usr/local/crypt_env/bin',
+        notify      => Exec['/usr/local/crypt_env/bin/python /usr/local/crypt/set_password.py'],
         refreshonly => true,
     }
     
     exec {'/usr/local/crypt_env/bin/python /usr/local/crypt/set_password.py':
-        require => Exec['/usr/local/crypt_env/bin/python /usr/local/crypt/manage.py syncdb --noinput'],
-        path    => '/usr/local/crypt_env/bin',
-        notify  => [Service['httpd']],
+        require     => Exec['/usr/local/crypt_env/bin/python /usr/local/crypt/manage.py syncdb --noinput'],
+        path        => '/usr/local/crypt_env/bin',
+        notify      => Service['httpd'],
         refreshonly => true,
     }
     
@@ -152,15 +149,15 @@ class crypt::server (
     }
     
     apache::vhost { "${hostname}":
-        port            => '80',
-        docroot         => '/usr/local/crypt',
+        port     => '80',
+        docroot  => '/usr/local/crypt',
         template => 'crypt/vhost.erb',
      }
      
      file {'/usr/local/crypt':
-         ensure => directory,
-         owner  => www-data,
-         group  => www-data,
+         ensure  => directory,
+         owner   => www-data,
+         group   => www-data,
          recurse => true,
      }
 }
