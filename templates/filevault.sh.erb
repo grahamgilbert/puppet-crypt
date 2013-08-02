@@ -38,7 +38,7 @@ check_encryption_state() {
 main() {
   check_encryption_state
 
-  if [[ $1 == "root" <% if skip_username != "" %>|| $1 == "<%= skip_username -%>" <% end -%>]]; then
+  if [[ $1 == "root" <% if @skip_username != "" %>|| $1 == "<%= @skip_username -%>" <% end -%>]]; then
     log "Exiting Crypt hook for $1 logging in."
     exit 0
   fi
